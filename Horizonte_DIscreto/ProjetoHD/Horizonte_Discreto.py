@@ -12,7 +12,6 @@ passos = pygame.mixer.Sound("recursos/som_passos.wav")
 largura = 1365
 altura = 510
 
-
 background_primavera_desfocado = pygame.image.load("backgrounds/cenario1(primavera-desfocado).jpg")
 background_primavera_desfocado = pygame.transform.scale(background_primavera_desfocado, (largura, altura))
 background_primavera_meio_foco = pygame.image.load("backgrounds/cenario1(primavera-meio_foco).jpg")
@@ -220,10 +219,11 @@ def quiz_primavera(tela):
 
 def receber_ticket():
     """Função para trocar a imagem do baú pelo ticket após o quiz ser finalizado."""
-    global bau, bau_transformado
+    global bau, bau_transformado, tempo_bau_transformado
     bau = ticket_primavera  # Troca a imagem do baú pela imagem do ticket
     bau_y = personagem_y
     bau_transformado = True  # Indica que o baú foi transformado em ticket
+    tempo_bau_transformado = pygame.time.get_ticks()
 
 
 def jogo():
@@ -305,6 +305,13 @@ def jogo():
             elif direcao == 'baixo':
                 direcao = 'cima'
                 personagem_y -= velocidade
+
+                # Verificar se o baú foi transformado e o tempo já passou
+        if bau_transformado and tempo_bau_transformado:
+            tempo_passado = pygame.time.get_ticks() - tempo_bau_transformado
+            if tempo_passado >= 3000:  # Se passaram mais de 3 segundos
+                pygame.quit()
+                sys.exit()
 
         # Desenhe o baú
         tela.blit(bau, (bau_x, bau_y))
