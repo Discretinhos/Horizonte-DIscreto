@@ -3,37 +3,45 @@ import sys
 
 pygame.init()
 
-pygame.mixer_music.load("recursos/musica_meu.mp3")
+pygame.mixer_music.load("Recursos/musica_meu.mp3")
 pygame.mixer_music.play(-1)
-pygame.mixer_music.set_volume(0.4)
-passos = pygame.mixer.Sound("recursos/som_passos.wav")
-
+pygame.mixer_music.set_volume(0.3)  # ajuste música de fundo
+musica_pausada = False
+passos = pygame.mixer.Sound("Recursos/som_passos.ogg")
+upar_level = pygame.mixer.Sound("Recursos/upar_level.ogg")
+abrir_bau = pygame.mixer.Sound("Recursos/abrir_bau.ogg")
+# ajuste efeitos sonoros
+upar_level.set_volume(0.5)
+passos.set_volume(0.25)
+abrir_bau.set_volume(0.5)
 
 largura = 1365
 altura = 510
 
-background_primavera_desfocado = pygame.image.load("backgrounds/cenario1(primavera-desfocado).jpg")
+background_primavera_desfocado = pygame.image.load("Backgrounds/cenario1(primavera-desfocado).jpg")
 background_primavera_desfocado = pygame.transform.scale(background_primavera_desfocado, (largura, altura))
-background_primavera_meio_foco = pygame.image.load("backgrounds/cenario1(primavera-meio_foco).jpg")
+background_primavera_meio_foco = pygame.image.load("Backgrounds/cenario1(primavera-meio_foco).jpg")
 background_primavera_meio_foco = pygame.transform.scale(background_primavera_meio_foco, (largura, altura))
-background_primavera_nitido = pygame.image.load("backgrounds/cenario1(primavera-nitido).jpg")
+background_primavera_nitido = pygame.image.load("Backgrounds/cenario1(primavera-nitido).jpg")
 background_primavera_nitido = pygame.transform.scale(background_primavera_nitido, (largura, altura))
-background_inicio = pygame.image.load("recursos/tela_inicial.jpg")
+background_inicio = pygame.image.load("Recursos/tela_inicial.jpg")
 background_inicio = pygame.transform.scale(background_inicio, (largura, altura))
 
+mapa = pygame.image.load("Recursos/mapa.jpg")  # tela: 1280 x 700
+mapa = pygame.transform.scale(mapa, (largura, altura))
+texto_fim = pygame.image.load("Recursos/texto_fim.jpg")
+texto_fim = pygame.transform.scale(texto_fim, (largura, altura))
 
-mapa = pygame.image.load("recursos/mapa.jpg")  # tela: 1280 x 700
-mapa = pygame.transform.scale(mapa, (largura,altura))
-personagem_sprite_sheet = pygame.image.load('recursos/sprites_Ella_prota.png')
+personagem_sprite_sheet = pygame.image.load('Recursos/sprites_Ella_prota.png')
 personagem_sprite_sheet = pygame.transform.scale(personagem_sprite_sheet, (32 * 6, 32 * 8))
 
-icon = pygame.image.load("recursos/icon.jpg")
-bau = pygame.image.load("recursos/baú fechado.png")
+icon = pygame.image.load("Recursos/icon.jpg")
+bau = pygame.image.load("Recursos/baú fechado.png")
+bau_sumiu = pygame.image.load("Recursos/bau_sumiu.png")
 barra_xp = pygame.image.load("barras_xp/barra_xp_comeco.png")
 barra_xp_20 = pygame.image.load("barras_xp/barra_xp_20%.png")
 barra_xp = pygame.transform.scale(barra_xp, (200, 50))
 barra_xp_20 = pygame.transform.scale(barra_xp_20, (200, 50))
-
 
 # Posição inicial do personagem
 personagem_x = 500
@@ -63,24 +71,26 @@ pygame.display.set_caption("Horizonte Discreto")
 pygame.display.set_icon(icon)
 
 # Perguntas
-pergunta_1 = pygame.image.load("recursos/pergunta_1_primavera.jpg")
-pergunta_1 = pygame.transform.scale(pergunta_1, (1365,510))
-pergunta_2 = pygame.image.load("recursos/pergunta_2_primavera.jpg")
-pergunta_2 = pygame.transform.scale(pergunta_2, (1365,510))
-pergunta_3 = pygame.image.load("recursos/pergunta_3_primavera.jpg")
-pergunta_3 = pygame.transform.scale(pergunta_3, (1365,510))
-pergunta_4 = pygame.image.load("recursos/pergunta_4_primavera.jpg")
-pergunta_4 = pygame.transform.scale(pergunta_4, (1365,510))
-pergunta_5 = pygame.image.load("recursos/pergunta_5_primavera.jpg")
-pergunta_5 = pygame.transform.scale(pergunta_5, (1365,510))
+pergunta_1 = pygame.image.load("Recursos/pergunta_1_primavera.jpg")
+pergunta_1 = pygame.transform.scale(pergunta_1, (1365, 510))
+pergunta_2 = pygame.image.load("Recursos/pergunta_2_primavera.jpg")
+pergunta_2 = pygame.transform.scale(pergunta_2, (1365, 510))
+pergunta_3 = pygame.image.load("Recursos/pergunta_3_primavera.jpg")
+pergunta_3 = pygame.transform.scale(pergunta_3, (1365, 510))
+pergunta_4 = pygame.image.load("Recursos/pergunta_4_primavera.jpg")
+pergunta_4 = pygame.transform.scale(pergunta_4, (1365, 510))
+pergunta_5 = pygame.image.load("Recursos/pergunta_5_primavera.jpg")
+pergunta_5 = pygame.transform.scale(pergunta_5, (1365, 510))
 perguntas = [pergunta_1, pergunta_2, pergunta_3, pergunta_4, pergunta_5]
 pergunta_atual = 0
 respondendo = True
 
 # Baú e Ticket
 bau_transformado = False
-ticket_primavera = pygame.image.load("recursos/ticket_primavera.png")
+ticket_primavera = pygame.image.load("Recursos/ticket_primavera.png")
 ticket_primavera = pygame.transform.scale(ticket_primavera, (44, 44))
+
+fim = False
 
 def transicao_background(tela):
     """Função para realizar a transição de foco das imagens."""
@@ -119,10 +129,9 @@ def tela_inicio():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:
-                    transicao_background(tela)  # Iniciar a transição antes do jogo
-                    jogo()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                transicao_background(tela)  # Iniciar a transição antes do jogo
+                jogo()
 
 
 def mostrar_mapa(tela):
@@ -217,18 +226,21 @@ def quiz_primavera(tela):
             receber_ticket()
         pygame.display.update()
 
+
 def receber_ticket():
     """Função para trocar a imagem do baú pelo ticket após o quiz ser finalizado."""
-    global bau, bau_transformado, tempo_bau_transformado
+    global bau, bau_transformado, tempo_bau_transformado, tempo_desaparecimento
     bau = ticket_primavera  # Troca a imagem do baú pela imagem do ticket
     bau_y = personagem_y
     bau_transformado = True  # Indica que o baú foi transformado em ticket
     tempo_bau_transformado = pygame.time.get_ticks()
+    tempo_desaparecimento = tempo_bau_transformado  # Armazena o tempo de transformação
+    upar_level.play()
 
 
 def jogo():
     """Função principal do jogo após a transição."""
-    global personagem_x, personagem_y, direcao, barra_xp_20, barra_xp
+    global personagem_x, personagem_y, direcao, barra_xp_20, barra_xp, bau_transformado, bau, musica_pausada, fim
 
     largura_primavera, altura_primavera = background_primavera_nitido.get_size()
     tela = pygame.display.set_mode((largura_primavera, altura_primavera))
@@ -245,27 +257,34 @@ def jogo():
         if teclas[pygame.K_w] or teclas[pygame.K_UP]:
             if personagem_y > 418:  # Limite superior
                 personagem_y -= velocidade
-                pygame.mixer.Sound.play(passos, 1, 2)
+                passos.play()
                 direcao = 'cima'
         if teclas[pygame.K_s] or teclas[pygame.K_DOWN]:
             if personagem_y < 418:  # Limite inferior
                 personagem_y += velocidade
-                pygame.mixer.Sound.play(passos, 1, 2)
+                passos.play()
                 direcao = 'baixo'
         if teclas[pygame.K_a] or teclas[pygame.K_LEFT]:
             if personagem_x > 0:  # Limite esquerdo
                 personagem_x -= velocidade
-                pygame.mixer.Sound.play(passos, 1, 2)
+                passos.play()
                 direcao = 'esquerda'
         if teclas[pygame.K_d] or teclas[pygame.K_RIGHT]:
             if personagem_x < largura_primavera - personagem_largura:  # Limite direito
                 personagem_x += velocidade
-                pygame.mixer.Sound.play(passos, 1, 2)
+                passos.play()
                 direcao = 'direita'
         if teclas[pygame.K_m]:  # Pressione 'M' para mostrar o mapa
             mostrar_mapa(tela)
         if teclas[pygame.K_h]:  # Pressione 'H' para mostrar o tutorial inicial
             mostrar_tuto_inicial(tela, largura)
+        if teclas[pygame.K_s]:
+            if musica_pausada:
+                pygame.mixer.music.unpause()  # Retoma a música
+                musica_pausada = False
+            else:
+                pygame.mixer.music.pause()  # Pausa a música
+                musica_pausada = True
 
         # Background geral do jogo
         tela.blit(background_primavera_nitido, (0, 0))
@@ -292,6 +311,7 @@ def jogo():
             quiz_primavera(tela)
             barra_xp = barra_xp_20
 
+
             # Inverter a direção da personagem ao colidir
             if direcao == 'direita':
                 direcao = 'esquerda'
@@ -307,15 +327,32 @@ def jogo():
                 personagem_y -= velocidade
 
                 # Verificar se o baú foi transformado e o tempo já passou
-        if bau_transformado and tempo_bau_transformado:
-            tempo_passado = pygame.time.get_ticks() - tempo_bau_transformado
-            if tempo_passado >= 3000:  # Se passaram mais de 3 segundos
-                pygame.quit()
-                sys.exit()
+        if bau_transformado:
+            tempo_passado = pygame.time.get_ticks() - tempo_desaparecimento
+            abrir_bau.play()
+            if tempo_passado >= 3000:  # 3 s de espera
+                bau_transformado = False
+                bau = bau_sumiu
 
-        # Desenhe o baú
+        if bau == bau_sumiu:
+            tempo_passado = pygame.time.get_ticks() - tempo_desaparecimento
+            if tempo_passado >= 5000:
+                fim = True
+
+        if not bau_transformado:
+            tela.blit(bau, (bau_x, bau_y))
+
         tela.blit(bau, (bau_x, bau_y))
         tela.blit(barra_xp, (barra_xp_x, barra_xp_y))
+
+        if fim:
+            tela.blit(texto_fim, (0, 0))
+            pygame.display.update()
+            for event in pygame.event.get():
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    pygame.quit()
+                    sys.exit()
+
 
         # Atualize a tela
         pygame.display.update()
